@@ -1,141 +1,317 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>The Four Adventurers — Live ELA Quest</title>
+<title>Safe Passage: A Writing Quest</title>
 <style>
-:root{color-scheme:dark;--gold:#e8c477;--paper:#f4e7c8;--panel:#28251e;--line:#8c754d}
+:root{
+  color-scheme:dark;
+  --gold:#e9c77c;
+  --paper:#f4e8cb;
+  --panel:#29271f;
+  --border:#927b50;
+}
 *{box-sizing:border-box}
-body{margin:0;background:radial-gradient(ellipse at top,#46513a 0,#20251c 48%,#10110f 100%);color:var(--paper);font-family:Georgia,serif}
-header{text-align:center;padding:20px 12px 12px}
-h1{margin:0;color:var(--gold);font-size:clamp(1.7rem,4vw,2.8rem);letter-spacing:.08em}
-header p{font:600 .8rem system-ui;letter-spacing:.1em;text-transform:uppercase;color:#d2c39e}
+body{
+  margin:0;
+  background:radial-gradient(ellipse at top,#49523a,#22291f 48%,#111510);
+  color:var(--paper);
+  font-family:Georgia,serif;
+}
+header{text-align:center;padding:22px 12px 14px}
+h1{
+  color:var(--gold);
+  font-size:clamp(1.7rem,4vw,2.7rem);
+  letter-spacing:.06em;
+  margin:0;
+}
+header p{
+  font:600 .8rem system-ui;
+  letter-spacing:.1em;
+  color:#d2c5a8;
+}
 main{max-width:1250px;margin:auto;padding:12px}
-.panel,.setup-card,.player-card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px}
-h2{color:var(--gold);font-size:1.15rem;margin:0 0 10px}
-h3{color:var(--gold);margin:0 0 8px}
-input,textarea,select{width:100%;padding:10px;border:1px solid #a58c5c;border-radius:7px;background:#171612;color:#fff;font:1rem system-ui}
-label{font:600 .83rem system-ui;color:#e8d8b5}
-button{padding:11px 14px;border:0;border-radius:8px;background:linear-gradient(#f2d58c,#bd8b43);color:#21180e;font:700 .9rem system-ui;cursor:pointer}
-button.secondary{background:#514638;color:#f5e8c8;border:1px solid #91784f}
-button:disabled{opacity:.4;cursor:not-allowed}
-button.full{width:100%;margin-top:9px}
-.hidden{display:none!important}
-.setup-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.panel,.setup-card,.player-card{
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:14px;
+}
+h2{color:var(--gold);font-size:1.2rem;margin:0 0 12px}
+h3{color:var(--gold);margin:0 0 10px}
+p{line-height:1.5}
+.note,.muted{color:#d1c2a2;font:.88rem/1.5 system-ui}
 .field{display:grid;gap:6px;margin:10px 0}
-.note,.muted{color:#cbbd9d;font: .86rem/1.5 system-ui}
-.error{color:#ffb29e;font: .9rem/1.4 system-ui;margin-top:10px}
-.success{color:#b9e0a9;font: .9rem/1.4 system-ui;margin-top:10px}
-.topbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:12px}
-.room-code{font:700 1.4rem system-ui;letter-spacing:.16em;color:var(--gold)}
-.game-layout{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(290px,.8fr);gap:14px;align-items:start}
-.board-shell{padding:8px;border:2px solid #a58a53;border-radius:16px;background:#252b20}
-svg{width:100%;height:auto;display:block}
+label{font:600 .86rem system-ui}
+input,select,textarea{
+  width:100%;
+  padding:10px;
+  border:1px solid #a58c5c;
+  border-radius:7px;
+  background:#171711;
+  color:white;
+  font:1rem system-ui;
+}
+textarea{min-height:115px;resize:vertical}
+button{
+  padding:11px 14px;
+  border:0;
+  border-radius:8px;
+  background:linear-gradient(#f2d58d,#bf9149);
+  color:#21190f;
+  font:700 .9rem system-ui;
+  cursor:pointer;
+}
+button.secondary{
+  background:#504638;
+  color:#f4e7c8;
+  border:1px solid #9b8054;
+}
+button:disabled{opacity:.42;cursor:not-allowed}
+button.full{width:100%;margin-top:10px}
+.hidden{display:none!important}
+.setup-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:14px;
+}
+.error{color:#ffb3a3;font:.9rem system-ui}
+.topbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:12px;
+  margin-bottom:12px;
+}
+.room-code{
+  color:var(--gold);
+  font:700 1.5rem system-ui;
+  letter-spacing:.16em;
+}
+.game-layout{
+  display:grid;
+  grid-template-columns:minmax(0,1.4fr) minmax(300px,.8fr);
+  align-items:start;
+  gap:14px;
+}
+.board-shell{
+  padding:8px;
+  border:2px solid #b39458;
+  border-radius:16px;
+  background:#252b20;
+}
+svg{display:block;width:100%;height:auto}
 .stack{display:grid;gap:12px}
-.players{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.players{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:8px;
+}
 .player-card{padding:10px}
-.player-card.active{outline:2px solid var(--gold);background:#393224}
-.player-role{font:700 .75rem system-ui;color:var(--gold);text-transform:uppercase}
-.player-name{font:1rem system-ui;margin:4px 0}
-.player-pos{font:.8rem system-ui;color:#cbbd9d}
-.dice{display:flex;justify-content:center;gap:12px;margin:12px}
-.die{width:56px;height:56px;border-radius:12px;background:#f5e9cc;color:#211b13;display:grid;place-items:center;font:700 2rem system-ui;box-shadow:inset 0 -4px #c9b78e}
-.status{font:.88rem/1.5 system-ui;color:#e6d9bc;min-height:34px}
-.quest-checks{display:grid;gap:8px;margin:12px 0}
-.checkrow{display:flex;gap:9px;align-items:flex-start;padding:10px;background:#1c1b16;border:1px solid #71603e;border-radius:8px;font:.9rem/1.4 system-ui}
-.checkrow input{width:18px;height:18px;flex:0 0 auto;margin:1px 0 0;accent-color:#d8b66e}
-textarea{min-height:100px;resize:vertical}
-.result{background:#1b1b15;border:1px solid #8c754d;border-radius:8px;padding:12px;font:.9rem/1.5 system-ui;margin-top:10px;white-space:pre-wrap}
-.log{max-height:210px;overflow:auto;padding-left:20px;font:.82rem/1.5 system-ui;color:#d9c9a8}
-footer{text-align:center;padding:18px;color:#b7aa8e;font:.75rem system-ui}
-@media(max-width:850px){.game-layout{grid-template-columns:1fr}}
-@media(max-width:560px){.setup-grid{grid-template-columns:1fr}.players{grid-template-columns:1fr 1fr}}
+.player-card.active{
+  outline:2px solid var(--gold);
+  background:#3c3425;
+}
+.player-role{
+  font:700 .75rem system-ui;
+  color:var(--gold);
+  text-transform:uppercase;
+}
+.player-name{font:1rem system-ui;margin:5px 0}
+.player-pos{font:.8rem system-ui;color:#cdbd9b}
+.dice{display:flex;justify-content:center;gap:12px;margin:14px}
+.die{
+  width:60px;height:60px;
+  border-radius:12px;
+  display:grid;place-items:center;
+  background:#f4e7c9;
+  color:#241c12;
+  font:700 2rem system-ui;
+}
+.status{font:.9rem/1.5 system-ui;min-height:24px}
+.checkrow{
+  display:flex;
+  gap:10px;
+  align-items:flex-start;
+  padding:10px;
+  margin:8px 0;
+  background:#1c1b16;
+  border:1px solid #746342;
+  border-radius:8px;
+  font:.9rem/1.45 system-ui;
+}
+.checkrow input{
+  width:18px;height:18px;
+  flex:0 0 auto;
+  margin:2px 0 0;
+  accent-color:#d8b66e;
+}
+.result{
+  background:#1b1b15;
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:12px;
+  margin-top:12px;
+  font:.9rem/1.5 system-ui;
+  white-space:pre-wrap;
+}
+.log{
+  max-height:220px;
+  overflow:auto;
+  padding-left:20px;
+  font:.82rem/1.5 system-ui;
+}
+footer{
+  text-align:center;
+  padding:18px;
+  font:.76rem system-ui;
+  color:#bdb095;
+}
+@media(max-width:850px){
+  .game-layout{grid-template-columns:1fr}
+}
+@media(max-width:560px){
+  .setup-grid{grid-template-columns:1fr}
+}
 </style>
 </head>
 <body>
+
 <header>
-  <h1>THE FOUR ADVENTURERS</h1>
-  <p>An enchanted ELA quest · Four players · One shared adventure</p>
+<h1>SAFE PASSAGE: A WRITING QUEST</h1>
+<p>Four Adventurers · One Shared Writing Quest</p>
 </header>
 
 <main>
-  <section id="setup" class="setup-card">
-    <h2>Enter the Adventure</h2>
-    <p class="note">One student creates a room and shares its code. The other three students join using that code. Each student claims one character on their own Chromebook.</p>
-    <div class="setup-grid">
-      <div class="panel">
-        <h3>Create a new group</h3>
-        <div class="field"><label for="createName">Your character name</label><input id="createName" maxlength="24" placeholder="Enter your name"></div>
-        <div class="field"><label for="createRole">Choose your character</label>
-          <select id="createRole">
-            <option value="dm">🧙 DM</option><option value="knight">⚔️ Knight</option><option value="bard">🎭 Bard</option><option value="timekeeper">⌛ Time Keeper</option>
-          </select>
-        </div>
-        <button id="createRoom" class="full">Create a Game Room</button>
-      </div>
-      <div class="panel">
-        <h3>Join an existing group</h3>
-        <div class="field"><label for="joinCode">Group room code</label><input id="joinCode" maxlength="6" placeholder="Example: A7K9Q2" autocapitalize="characters"></div>
-        <div class="field"><label for="joinName">Your character name</label><input id="joinName" maxlength="24" placeholder="Enter your name"></div>
-        <div class="field"><label for="joinRole">Choose your character</label>
-          <select id="joinRole">
-            <option value="knight">⚔️ Knight</option><option value="dm">🧙 DM</option><option value="bard">🎭 Bard</option><option value="timekeeper">⌛ Time Keeper</option>
-          </select>
-        </div>
-        <button id="joinRoom" class="full">Join Your Group</button>
-      </div>
-    </div>
-    <div id="setupMessage" aria-live="polite"></div>
-    <p class="note"><strong>Teacher setup:</strong> Add your Firebase web-app configuration in the code where marked below, enable Anonymous Authentication, and create a Realtime Database. The database rules are included in the setup notes that accompany this file.</p>
-  </section>
 
-  <section id="game" class="hidden">
-    <div class="topbar panel">
-      <div><div class="muted">GROUP ROOM</div><div id="roomCode" class="room-code"></div></div>
-      <div id="myRole" class="muted"></div>
-      <button id="leaveRoom" class="secondary">Leave room</button>
-    </div>
+<section id="setup" class="setup-card">
+<h2>Enter the Adventure</h2>
+<p class="note">
+One adventurer creates a room and shares its six-character code.
+The other three join and choose their own unclaimed characters.
+</p>
 
-    <div class="game-layout">
-      <div class="board-shell"><svg id="board" viewBox="0 0 900 900" role="img" aria-label="Four character paths leading to the Final Boss"></svg></div>
-      <div class="stack">
-        <section class="panel">
-          <h2>Your Party</h2>
-          <div id="players" class="players"></div>
-          <p id="turnStatus" class="status" aria-live="polite"></p>
-          <div class="dice"><div id="die1" class="die">⚀</div><div id="die2" class="die">⚄</div></div>
-          <button id="rollButton" class="full" disabled>Roll Both Dice</button>
-          <p id="gameStatus" class="status" aria-live="polite">Waiting for your group to join...</p>
-        </section>
+<div class="setup-grid">
 
-        <section id="questPanel" class="panel hidden">
-          <h2 id="questTitle"></h2>
-          <p id="questPrompt" class="note"></p>
-          <div id="questFields"></div>
-          <button id="completeQuest" class="full" disabled>Complete Party Quest</button>
-        </section>
+<div class="panel">
+<h3>Create a Game Room</h3>
+<div class="field">
+<label for="createName">Character name</label>
+<input id="createName" maxlength="24" placeholder="Your character name">
+</div>
+<div class="field">
+<label for="createRole">Your character</label>
+<select id="createRole">
+<option value="dm">🧙 DM — North</option>
+<option value="knight">⚔️ Knight — East</option>
+<option value="bard">🎭 Bard — South</option>
+<option value="timekeeper">⌛ Time Keeper — West</option>
+</select>
+</div>
+<button id="createButton" class="full">Create Game Room</button>
+</div>
 
-        <section id="bossPanel" class="panel hidden">
-          <h2>⚔️ The Final Boss</h2>
-          <p class="note">All four adventurers have arrived! Work together on your final Reader's Response.</p>
-          <div class="field"><label for="finalResponse">Your party's final response</label><textarea id="finalResponse" placeholder="Enter your final Reader's Response..."></textarea></div>
-          <div id="dmControl" class="hidden"></div>
-          <div id="bardControl" class="hidden"></div>
-          <div id="bossResult" class="result">The Bard's roll and party outcomes will appear here.</div>
-        </section>
+<div class="panel">
+<h3>Join a Game Room</h3>
+<div class="field">
+<label for="joinCode">Room code</label>
+<input id="joinCode" maxlength="6" placeholder="Six-character code">
+</div>
+<div class="field">
+<label for="joinName">Character name</label>
+<input id="joinName" maxlength="24" placeholder="Your character name">
+</div>
+<div class="field">
+<label for="joinRole">Your character</label>
+<select id="joinRole">
+<option value="knight">⚔️ Knight — East</option>
+<option value="dm">🧙 DM — North</option>
+<option value="bard">🎭 Bard — South</option>
+<option value="timekeeper">⌛ Time Keeper — West</option>
+</select>
+</div>
+<button id="joinButton" class="full">Join Your Group</button>
+</div>
 
-        <section class="panel">
-          <h2>Adventure Log</h2>
-          <ol id="log" class="log"><li>Your adventure will appear here.</li></ol>
-        </section>
-      </div>
-    </div>
-  </section>
+</div>
+<p id="setupMessage" class="error" aria-live="polite"></p>
+</section>
+
+<section id="game" class="hidden">
+
+<div class="topbar panel">
+<div>
+<div class="muted">YOUR GROUP CODE</div>
+<div id="roomCodeDisplay" class="room-code"></div>
+</div>
+<div id="myRoleDisplay" class="note"></div>
+<button id="leaveButton" class="secondary">Return to Entrance</button>
+</div>
+
+<div class="game-layout">
+
+<div class="board-shell">
+<svg id="board" viewBox="0 0 900 900"
+role="img" aria-label="Four character paths to the Final Boss"></svg>
+</div>
+
+<div class="stack">
+
+<section class="panel">
+<h2>Your Party</h2>
+<div id="players" class="players"></div>
+<p id="turnStatus" class="status"></p>
+<div class="dice">
+<div id="die1" class="die">⚀</div>
+<div id="die2" class="die">⚄</div>
+</div>
+<button id="rollButton" class="full" disabled>Roll Both Dice</button>
+<p id="gameStatus" class="status"></p>
+</section>
+
+<section id="questPanel" class="panel hidden">
+<h2 id="questTitle"></h2>
+<p id="questPrompt" class="note"></p>
+<div id="questFields"></div>
+<button id="completeQuestButton" class="full">
+Complete Party Quest
+</button>
+</section>
+
+<section id="bossPanel" class="panel hidden">
+<h2>⚔️ The Final Boss</h2>
+<p class="note">
+All four adventurers have reached the final challenge.
+Work together to prepare your Reader's Response.
+</p>
+
+<div class="field">
+<label for="finalResponse">Your party's final Reader's Response</label>
+<textarea id="finalResponse"
+placeholder="Write your party's final response here..."></textarea>
+</div>
+<button id="saveResponseButton" class="full">Save Party Response</button>
+
+<div id="dmControls"></div>
+<div id="bardControls"></div>
+<div id="bossResult" class="result"></div>
+</section>
+
+<section class="panel">
+<h2>Adventure Log</h2>
+<ol id="log" class="log"></ol>
+</section>
+
+</div>
+</div>
+</section>
 </main>
-<footer>One room per group. One shared board. Each player controls only their own character.</footer>
 
-<!-- Firebase SDKs. This file uses the Firebase compat API for a single-file setup. -->
+<footer>Safe Passage · Four Adventurers · One Writing Quest</footer>
+
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
@@ -143,588 +319,882 @@ footer{text-align:center;padding:18px;color:#b7aa8e;font:.75rem system-ui}
 <script>
 "use strict";
 
-/* ============================================================
-   FIREBASE SETUP
-   1. Create a Firebase project.
-   2. Register a Web App in Project settings.
-   3. Paste the firebaseConfig values below.
-   4. Enable Authentication > Sign-in method > Anonymous.
-   5. Create a Realtime Database.
-   ============================================================ */
-
 const firebaseConfig = {
-  apiKey: "PASTE_YOUR_FIREBASE_API_KEY_HERE",
-  authDomain: "PASTE_YOUR_PROJECT.firebaseapp.com",
-  databaseURL: "https://PASTE_YOUR_PROJECT-default-rtdb.firebaseio.com",
-  projectId: "PASTE_YOUR_PROJECT",
-  storageBucket: "PASTE_YOUR_PROJECT.appspot.com",
-  messagingSenderId: "PASTE_YOUR_SENDER_ID",
-  appId: "PASTE_YOUR_APP_ID"
+  apiKey: "AIzaSyDgU8k1CiTSSU0B8jzomr4I4CkezblNxKs",
+  authDomain: "safe-passage-ela.firebaseapp.com",
+  databaseURL: "https://safe-passage-ela-default-rtdb.firebaseio.com/",
+  projectId: "safe-passage-ela",
+  storageBucket: "safe-passage-ela.firebasestorage.app",
+  messagingSenderId: "735096615060",
+  appId: "1:735096615060:web:c84469bda738e4fd2d0481",
+  measurementId: "G-DXKY83K826"
 };
 
-const FIREBASE_CONFIG_IS_SET =
-  !firebaseConfig.apiKey.includes("PASTE_") &&
-  !firebaseConfig.projectId.includes("PASTE_") &&
-  !firebaseConfig.databaseURL.includes("PASTE_");
+firebase.initializeApp(firebaseConfig);
+const auth=firebase.auth();
+const db=firebase.database();
+const $=id=>document.getElementById(id);
 
-const $ = id => document.getElementById(id);
-const roleOrder = ["dm", "knight", "bard", "timekeeper"];
-const roleInfo = {
-  dm: {label:"DM", symbol:"D", emoji:"🧙", angle:-90, color:"#e8c477"},
-  knight: {label:"Knight", symbol:"K", emoji:"⚔️", angle:0, color:"#e18b62"},
-  bard: {label:"Bard", symbol:"B", emoji:"🎭", angle:90, color:"#b99ad8"},
-  timekeeper: {label:"Time Keeper", symbol:"T", emoji:"⌛", angle:180, color:"#8bc6a0"}
+const ROLES=["dm","knight","bard","timekeeper"];
+const INFO={
+  dm:{name:"DM",icon:"🧙",letter:"D",angle:-90,color:"#e8c477"},
+  knight:{name:"Knight",icon:"⚔️",letter:"K",angle:0,color:"#e18b62"},
+  bard:{name:"Bard",icon:"🎭",letter:"B",angle:90,color:"#b99ad8"},
+  timekeeper:{name:"Time Keeper",icon:"⌛",letter:"T",angle:180,color:"#8bc6a0"}
 };
 
-const QUESTS = {
-  3: {
+const QUESTS={
+  3:{
     title:"The Sorting Hat",
     prompt:"Locate the plastic bag of sentence strips. Each strip connects together to build a complete Reader's Response. Sort through the strips of paper and categorize each sentence as either commentary or quotes. Each member of your party can help with this quest!",
-    checks:["Our party has sorted the sentence strips into commentary and quotes."]
+    checks:[
+      "Our party has sorted the sentence strips into commentary and quotes."
+    ]
   },
-  6: {
+  6:{
     title:"Finders Keepers",
     prompt:"Find the sentence strip that most closely resembles an answer to the quest prompt, a brief background sentence, and text evidence number 1",
-    checks:["Answer to the prompt","Background information","Text evidence number 1"]
+    checks:[
+      "Answer to the prompt",
+      "Background information",
+      "Text evidence number 1"
+    ]
   },
-  9: {
+  9:{
     title:"Finders Keepers",
     prompt:"Find the sentence strip that most closely resembles an answer to the quest prompt, a brief background sentence, and text evidence number 2",
-    checks:["Transition to text evidence","Text evidence number 2"]
+    checks:[
+      "Transition to text evidence",
+      "Text evidence number 2"
+    ]
   },
-  12: {
+  12:{
     title:"Cursed Treasure",
     prompt:"You stumble upon cursed treasure! To protect your party from disaster, find the last few missing pieces of the RR before heading toward the final boss!"
   }
 };
 
-let auth, db, uid = null, roomCode = null, roomRef = null, roomState = null, myRole = null;
-let roomListener = null;
-let busy = false;
-let finalResponseTimer = null;
+const STORE_ROOM="safePassageRoom";
+const STORE_ROLE="safePassageRole";
 
-function escapeHtml(value) {
-  return String(value ?? "").replace(/[&<>"']/g, ch => ({
-    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-  }[ch]));
+let uid=null;
+let roomCode=null;
+let myRole=null;
+let roomRef=null;
+let roomListener=null;
+let state=null;
+let busy=false;
+let activeQuestRendered=0;
+let questDirty=false;
+let finalDirty=false;
+let statusMessage="";
+
+function escapeHTML(value){
+  return String(value??"").replace(/[&<>"']/g,c=>({
+    "&":"&amp;","<":"&lt;",">":"&gt;",
+    '"':"&quot;","'":"&#39;"
+  }[c]));
 }
-function makeCode() {
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  let out = "";
-  for (let i=0;i<6;i++) out += chars[Math.floor(Math.random()*chars.length)];
-  return out;
+
+function randomRoomCode(){
+  const chars="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  const bytes=new Uint8Array(6);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes,b=>chars[b%chars.length]).join("");
 }
-function saySetup(message, kind="error") {
-  $("setupMessage").className = kind;
-  $("setupMessage").textContent = message;
+
+function dice(sides){
+  const bytes=new Uint32Array(1);
+  crypto.getRandomValues(bytes);
+  return bytes[0]%sides+1;
 }
-function setBusy(value) {
-  busy = value;
-  $("createRoom").disabled = value;
-  $("joinRoom").disabled = value;
+
+function message(text){
+  statusMessage=text;
+  if(state)$("gameStatus").textContent=text;
+  else $("setupMessage").textContent=text;
 }
-function configReady() {
-  if (!FIREBASE_CONFIG_IS_SET) {
-    saySetup("Firebase is not connected yet. Add your Firebase web-app configuration in the code before using the multiplayer game.");
-    return false;
-  }
-  return true;
+
+async function ensureAuth(){
+  if(!auth.currentUser)await auth.signInAnonymously();
+  uid=auth.currentUser.uid;
 }
-async function ensureSignedIn() {
-  if (!auth.currentUser) await auth.signInAnonymously();
-  uid = auth.currentUser.uid;
-}
-function initialRoom(hostRole, name, hostUid) {
-  const players = {};
-  players[hostRole] = {uid:hostUid,name:name,pos:0};
+
+function startingRoom(hostRole,name){
   return {
+    hostUid:uid,
     createdAt:Date.now(),
-    players,
-    turnRole:hostRole,
+    players:{
+      [hostRole]:{uid:uid,name:name}
+    },
+    game:{
+      turnRole:"dm",
+      positions:{dm:0,knight:0,bard:0,timekeeper:0},
+      pendingQuest:0,
+      lastDie1:1,
+      lastDie2:1,
+      moveCount:0
+    },
     questDone:{"3":false,"6":false,"9":false,"12":false},
-    activeQuest:null,
-    gameWon:false,
+    questWork:{
+      "3":{checks:{"0":false}},
+      "6":{checks:{"0":false,"1":false,"2":false}},
+      "9":{checks:{"0":false,"1":false}},
+      "12":{answer:"",agreed:false}
+    },
     finalResponse:"",
     dmAskedForHelp:false,
-    finalRollCount:0,
-    bossResult:"The Bard's roll and party outcomes will appear here.",
-    rewards:{
+    boss:{
+      rollCount:0,
+      lastRoll:-1,
+      result:"The Bard has not rolled yet.",
+      gameWon:false,
       libraryPass:false,
       sustenance:false,
       sustenancePending:false,
       treasure:false
-    },
-    log:["The party's adventure has begun!"]
+    }
   };
 }
-function appendLog(state, message) {
-  state.log = Array.isArray(state.log) ? state.log : [];
-  state.log.unshift(message);
-  state.log = state.log.slice(0,30);
-}
-function nextAvailableRole(state, fromRole) {
-  const start = roleOrder.indexOf(fromRole);
-  for (let step=1;step<=4;step++) {
-    const role = roleOrder[(start+step)%4];
-    const player = state.players && state.players[role];
-    if (player && player.pos < 12) return role;
-  }
-  return fromRole;
-}
-function allPlayersJoined(state) {
-  return roleOrder.every(role => state.players && state.players[role]);
-}
-function allAtEnd(state) {
-  return allPlayersJoined(state) &&
-    roleOrder.every(role => state.players[role].pos === 12) &&
-    state.questDone && state.questDone["12"] === true;
-}
-function currentPlayer() {
-  return roomState && roomState.players ? roomState.players[myRole] : null;
-}
-function isMyTurn() {
-  return !!roomState && allPlayersJoined(roomState) && roomState.turnRole === myRole &&
-    !!currentPlayer() && currentPlayer().pos < 12 &&
-    !roomState.activeQuest && !roomState.gameWon && !allAtEnd(roomState);
-}
-function addLog(state, message) { appendLog(state,message); }
 
-async function createRoom() {
-  if (busy || !configReady()) return;
-  const name = $("createName").value.trim();
-  const role = $("createRole").value;
-  if (!name) return saySetup("Enter a character name before creating your room.");
-  setBusy(true);
-  try {
-    await ensureSignedIn();
-    let created = false, code = "";
-    for (let attempt=0;attempt<8 && !created;attempt++) {
-      code = makeCode();
-      const ref = db.ref("rooms/"+code);
-      const result = await ref.transaction(current => {
-        if (current === null) return initialRoom(role,name,uid);
-        return;
-      }, undefined, false);
-      created = result.committed;
-    }
-    if (!created) throw new Error("Couldn't create a unique room code. Please try again.");
-    await enterRoom(code,role);
-  } catch (error) {
-    saySetup(error.message || "Unable to create the room.");
-  } finally {
-    setBusy(false);
-  }
+function allJoined(s){
+  return !!s&&ROLES.every(r=>s.players?.[r]?.uid);
 }
 
-async function joinRoom() {
-  if (busy || !configReady()) return;
-  const code = $("joinCode").value.trim().toUpperCase();
-  const name = $("joinName").value.trim();
-  const role = $("joinRole").value;
-  if (!/^[A-HJ-NP-Z2-9]{6}$/.test(code)) return saySetup("Enter the six-character room code from your DM.");
-  if (!name) return saySetup("Enter a character name before joining.");
-  setBusy(true);
-  try {
-    await ensureSignedIn();
-    const ref = db.ref("rooms/"+code);
-    const result = await ref.transaction(state => {
-      if (!state || state.gameWon) return;
-      state.players = state.players || {};
-      const existing = state.players[role];
-      if (existing && existing.uid !== uid) return;
-      if (!existing) {
-        if (Object.keys(state.players).length >= 4) return;
-        state.players[role] = {uid,name,pos:0};
-      } else {
-        existing.name = name;
+function isMember(s,r=myRole){
+  return !!s&&!!r&&s.players?.[r]?.uid===uid;
+}
+
+function allAtFinish(s){
+  return allJoined(s)&&ROLES.every(r=>
+    Number(s.game.positions[r])===12
+  );
+}
+
+function bossUnlocked(s){
+  return allAtFinish(s)&&
+    s.questDone["12"]===true&&
+    Number(s.game.pendingQuest)===0;
+}
+
+function nextTurn(positions,current){
+  const start=ROLES.indexOf(current);
+  for(let i=1;i<=4;i++){
+    const r=ROLES[(start+i)%4];
+    if(Number(positions[r])<12)return r;
+  }
+  return current;
+}
+
+function myTurn(){
+  return isMember(state)&&
+    allJoined(state)&&
+    !state.boss.gameWon&&
+    !bossUnlocked(state)&&
+    !state.game.pendingQuest&&
+    state.game.turnRole===myRole&&
+    Number(state.game.positions[myRole])<12;
+}
+
+function currentQuest(){
+  return Number(state?.game?.pendingQuest||0);
+}
+
+function questReady(s){
+  const n=Number(s.game.pendingQuest);
+  if(!n)return false;
+  const work=s.questWork?.[n];
+  if(!work)return false;
+  if(n===12)
+    return !!String(work.answer||"").trim()&&
+      work.agreed===true;
+  return QUESTS[n].checks.every((_,i)=>
+    work.checks?.[i]===true
+  );
+}
+
+async function createRoom(){
+  if(busy)return;
+  const name=$("createName").value.trim();
+  const chosen=$("createRole").value;
+  if(!name)return message("Enter a character name.");
+  busy=true;
+  $("createButton").disabled=true;
+  try{
+    await ensureAuth();
+    let created=null;
+    for(let attempt=0;attempt<8;attempt++){
+      const candidate=randomRoomCode();
+      const result=await db.ref("rooms/"+candidate)
+        .transaction(existing=>{
+          if(existing!==null)return;
+          return startingRoom(chosen,name);
+        },undefined,false);
+      if(result.committed){
+        created=candidate;
+        break;
       }
-      return state;
-    }, undefined, false);
-    if (!result.committed) {
-      const snapshot = await ref.once("value");
-      const state = snapshot.val();
-      if (!state) throw new Error("That room code wasn't found. Check the code with your group.");
-      if (state.gameWon) throw new Error("That adventure has already been completed.");
-      if (state.players && state.players[role] && state.players[role].uid !== uid) {
-        throw new Error("That character has already been claimed. Choose another character.");
-      }
-      throw new Error("This room is full or unavailable.");
     }
-    await enterRoom(code,role);
-  } catch (error) {
-    saySetup(error.message || "Unable to join the room.");
-  } finally {
-    setBusy(false);
+    if(!created)throw Error("Unable to create a room. Try again.");
+    enterRoom(created,chosen);
+  }catch(e){
+    message("Create room: "+e.message);
+  }finally{
+    busy=false;
+    $("createButton").disabled=false;
   }
 }
 
-async function enterRoom(code, role) {
-  roomCode = code;
-  myRole = role;
-  roomRef = db.ref("rooms/"+code);
-  if (roomListener) roomRef.off("value",roomListener);
-  roomListener = snapshot => {
-    const data = snapshot.val();
-    if (!data) {
-      saySetup("This room no longer exists.");
-      leaveRoom(false);
-      return;
+async function joinRoom(){
+  if(busy)return;
+  const candidate=$("joinCode").value.trim().toUpperCase();
+  const name=$("joinName").value.trim();
+  const chosen=$("joinRole").value;
+
+  if(!/^[A-HJ-NP-Z2-9]{6}$/.test(candidate))
+    return message("Enter a valid six-character room code.");
+  if(!name)return message("Enter a character name.");
+
+  busy=true;
+  $("joinButton").disabled=true;
+  try{
+    await ensureAuth();
+    const ref=db.ref("rooms/"+candidate);
+    const snapshot=await ref.once("value");
+    if(!snapshot.exists())throw Error("That room does not exist.");
+
+    const room=snapshot.val();
+    const existing=room.players?.[chosen];
+
+    if(existing&&existing.uid!==uid)
+      throw Error("That character is already claimed.");
+
+    if(!existing){
+      const alreadyHasRole=ROLES.some(r=>
+        room.players?.[r]?.uid===uid
+      );
+      if(alreadyHasRole)
+        throw Error("You already have a character in this room.");
+
+      const result=await ref.child("players/"+chosen)
+        .transaction(old=>{
+          if(old!==null)return;
+          return {uid,name};
+        },undefined,false);
+
+      if(!result.committed)
+        throw Error("Someone else claimed that character first.");
     }
-    roomState = data;
-    renderGame();
-  };
-  roomRef.on("value",roomListener);
+    enterRoom(candidate,chosen);
+  }catch(e){
+    message("Join room: "+e.message);
+  }finally{
+    busy=false;
+    $("joinButton").disabled=false;
+  }
+}
+
+function enterRoom(code,role){
+  if(roomRef&&roomListener)
+    roomRef.off("value",roomListener);
+
+  roomCode=code;
+  myRole=role;
+  state=null;
+  activeQuestRendered=0;
+  questDirty=false;
+  finalDirty=false;
+
+  localStorage.setItem(STORE_ROOM,roomCode);
+  localStorage.setItem(STORE_ROLE,myRole);
+
   $("setup").classList.add("hidden");
   $("game").classList.remove("hidden");
-  $("roomCode").textContent = code;
-  $("myRole").textContent = `You are ${roleInfo[role].emoji} ${roleInfo[role].label}`;
+  $("roomCodeDisplay").textContent=roomCode;
+  $("myRoleDisplay").textContent=
+    INFO[myRole].icon+" "+INFO[myRole].name;
+
+  roomRef=db.ref("rooms/"+roomCode);
+
+  roomListener=snapshot=>{
+    if(!snapshot.exists()){
+      leaveRoom();
+      message("The room no longer exists.");
+      return;
+    }
+    const incoming=snapshot.val();
+    if(incoming.players?.[myRole]?.uid!==uid){
+      leaveRoom();
+      message("You no longer own that character.");
+      return;
+    }
+    state=incoming;
+    render();
+  };
+
+  roomRef.on("value",roomListener,error=>{
+    $("gameStatus").textContent=
+      "Connection error: "+error.message;
+  });
 }
 
-function leaveRoom(showSetup=true) {
-  if (roomRef && roomListener) roomRef.off("value",roomListener);
-  roomRef = null; roomListener = null; roomState = null;
-  roomCode = null; myRole = null;
+function leaveRoom(){
+  if(roomRef&&roomListener)
+    roomRef.off("value",roomListener);
+  roomRef=null;
+  roomListener=null;
+  roomCode=null;
+  myRole=null;
+  state=null;
+  activeQuestRendered=0;
+  localStorage.removeItem(STORE_ROOM);
+  localStorage.removeItem(STORE_ROLE);
   $("game").classList.add("hidden");
-  if (showSetup) $("setup").classList.remove("hidden");
+  $("setup").classList.remove("hidden");
 }
 
-async function transactRoom(mutator) {
-  if (!roomRef || busy) return null;
-  busy = true;
-  try {
-    const result = await roomRef.transaction(state => {
-      if (!state) return;
-      return mutator(state);
-    },undefined,false);
-    if (!result.committed) return null;
-    return result.snapshot.val();
-  } catch (error) {
-    $("gameStatus").textContent = "Connection issue: " + error.message;
-    return null;
-  } finally {
-    busy = false;
-    renderGame();
+async function restoreRoom(){
+  const code=localStorage.getItem(STORE_ROOM);
+  const role=localStorage.getItem(STORE_ROLE);
+  if(!code||!ROLES.includes(role))return;
+  try{
+    await ensureAuth();
+    const snap=await db.ref("rooms/"+code).once("value");
+    if(snap.val()?.players?.[role]?.uid===uid)
+      enterRoom(code,role);
+    else{
+      localStorage.removeItem(STORE_ROOM);
+      localStorage.removeItem(STORE_ROLE);
+    }
+  }catch(e){
+    message("Reconnect: "+e.message);
   }
 }
 
-async function rollMovement() {
-  if (!isMyTurn() || busy) return;
-  const dieA = 1+Math.floor(Math.random()*6);
-  const dieB = 1+Math.floor(Math.random()*6);
-  const total = dieA+dieB;
-  await transactRoom(state => {
-    if (state.turnRole !== myRole || state.activeQuest || state.gameWon) return;
-    const player = state.players[myRole];
-    if (!player || player.pos >= 12) return;
-    const start = player.pos;
-    const target = Math.min(12,start+total);
-    const halt = [3,6,9,12].find(space =>
-      space>start && space<=target && !state.questDone[String(space)]
+async function transaction(ref,transform){
+  if(busy)return false;
+  busy=true;
+  try{
+    const result=await ref.transaction(transform,undefined,false);
+    if(!result.committed)
+      message("That action was not completed. Try again.");
+    return result.committed;
+  }catch(e){
+    message("Firebase: "+e.message);
+    return false;
+  }finally{
+    busy=false;
+    if(state)render();
+  }
+}
+
+async function rollMovement(){
+  if(!myTurn()||busy)return;
+  const a=dice(6),b=dice(6);
+  const done={
+    3:state.questDone["3"],
+    6:state.questDone["6"],
+    9:state.questDone["9"],
+    12:state.questDone["12"]
+  };
+
+  await transaction(roomRef.child("game"),game=>{
+    if(!game||game.turnRole!==myRole||
+       Number(game.pendingQuest)!==0)return;
+
+    const old=Number(game.positions[myRole]);
+    if(old>=12)return;
+
+    const destination=Math.min(12,old+a+b);
+    const stop=[3,6,9,12].find(n=>
+      n>old&&n<=destination&&!done[n]
     );
-    player.pos = halt || target;
-    state.lastDice = [dieA,dieB];
-    if (halt) {
-      state.activeQuest = {
-        space:halt,
-        checks:[],
-        answer:"",
-        agreed:false,
-        startedBy:myRole
-      };
-      addLog(state,`${player.name} rolled ${dieA}+${dieB}=${total} and reached ${QUESTS[halt].title}.`);
-    } else {
-      addLog(state,`${player.name} rolled ${dieA}+${dieB}=${total} and moved to space ${player.pos}.`);
-      state.turnRole = nextAvailableRole(state,myRole);
+
+    game.positions[myRole]=stop||destination;
+    game.lastDie1=a;
+    game.lastDie2=b;
+    game.moveCount=(game.moveCount||0)+1;
+
+    if(stop){
+      game.pendingQuest=stop;
+    }else{
+      game.turnRole=nextTurn(game.positions,myRole);
     }
-    return state;
+    return game;
   });
 }
 
-async function toggleQuestCheck(index, checked) {
-  if (!roomState || !roomState.activeQuest) return;
-  await transactRoom(state => {
-    if (!state.activeQuest) return;
-    const checks = new Set(state.activeQuest.checks || []);
-    if (checked) checks.add(index); else checks.delete(index);
-    state.activeQuest.checks = Array.from(checks);
-    return state;
-  });
+async function saveCheck(index,checked){
+  const space=currentQuest();
+  if(!space||space===12)return;
+  try{
+    await roomRef.child(
+      "questWork/"+space+"/checks/"+index
+    ).set(checked);
+  }catch(e){message(e.message);}
 }
-async function updateCursedAnswer(value) {
-  if (!roomState || !roomState.activeQuest) return;
-  await transactRoom(state => {
-    if (!state.activeQuest || state.activeQuest.space !== 12) return;
-    state.activeQuest.answer = value;
-    return state;
-  });
+
+async function saveCursedAnswer(){
+  if(currentQuest()!==12)return;
+  const text=$("cursedAnswer").value.trim();
+  try{
+    await roomRef.child("questWork/12/answer").set(text);
+    questDirty=false;
+  }catch(e){message(e.message);}
 }
-async function updatePartyAgreement(checked) {
-  await transactRoom(state => {
-    if (!state.activeQuest || state.activeQuest.space !== 12) return;
-    state.activeQuest.agreed = checked;
-    return state;
-  });
+
+async function saveAgreement(checked){
+  if(currentQuest()!==12)return;
+  try{
+    await roomRef.child("questWork/12/agreed").set(checked);
+  }catch(e){message(e.message);}
 }
-async function completeQuest() {
-  if (!roomState || !roomState.activeQuest || busy) return;
-  await transactRoom(state => {
-    const quest = state.activeQuest;
-    if (!quest) return;
-    const space = String(quest.space);
-    if (quest.space === 12) {
-      if (!String(quest.answer || "").trim() || !quest.agreed) return;
-    } else {
-      const needed = QUESTS[quest.space].checks.length;
-      const checked = new Set(quest.checks || []);
-      if (checked.size < needed) return;
-      for (let i=0;i<needed;i++) if (!checked.has(i)) return;
-    }
-    state.questDone[space] = true;
-    if (space === "12") state.cursedTreasureAnswer = quest.answer;
-    state.activeQuest = null;
-    state.turnRole = nextAvailableRole(state,quest.startedBy || myRole);
-    addLog(state,`${QUESTS[quest.space].title} is complete for the entire party. All players may pass this halt.`);
-    return state;
+
+async function completeQuest(){
+  if(!state||!questReady(state)||busy)return;
+  const space=currentQuest();
+  if(!space)return;
+
+  busy=true;
+  try{
+    await roomRef.child("questDone/"+space).set(true);
+
+    const result=await roomRef.child("game")
+      .transaction(game=>{
+        if(!game||Number(game.pendingQuest)!==space)return;
+        game.pendingQuest=0;
+        game.turnRole=nextTurn(game.positions,game.turnRole);
+        return game;
+      },undefined,false);
+
+    if(!result.committed)
+      message("Quest progress changed. Please try again.");
+  }catch(e){
+    message("Quest completion: "+e.message);
+  }finally{
+    busy=false;
+    render();
+  }
+}
+
+async function saveFinalResponse(){
+  if(!bossUnlocked(state))return;
+  const text=$("finalResponse").value.trim();
+  try{
+    await roomRef.child("finalResponse").set(text);
+    finalDirty=false;
+    message("Party response saved.");
+  }catch(e){message(e.message);}
+}
+
+async function setDMHelp(checked){
+  if(myRole!=="dm")return;
+  try{
+    await roomRef.child("dmAskedForHelp").set(checked);
+  }catch(e){message(e.message);}
+}
+
+async function confirmSustenance(){
+  if(myRole!=="dm"||!state.boss.sustenancePending)return;
+  await transaction(roomRef.child("boss"),boss=>{
+    if(!boss||!boss.sustenancePending)return;
+    boss.sustenancePending=false;
+    boss.sustenance=true;
+    boss.result=
+      "The DM confirms the Knight's definition of sustenance. Each party member earns sustenance!";
+    return boss;
   });
 }
 
-async function saveFinalResponse(value) {
-  if (!roomRef || !allAtEnd(roomState || {})) return;
-  await roomRef.child("finalResponse").set(value);
+async function rollFinalBoss(){
+  if(myRole!=="bard"||!bossUnlocked(state)||
+     state.boss.gameWon||
+     !String(state.finalResponse||"").trim()||busy)return;
+
+  const roll=dice(21)-1;
+
+  await transaction(roomRef.child("boss"),boss=>{
+    if(!boss||boss.gameWon)return;
+
+    boss.rollCount=(boss.rollCount||0)+1;
+    boss.lastRoll=roll;
+
+    let result="The Bard rolled "+roll+". ";
+
+    switch(roll){
+      case 20:
+        boss.gameWon=true;
+        result+="VICTORY! The party defeats the Final Boss. The Knight returns the supplies.";
+        break;
+      case 0:
+        result+="The Time Keeper writes the first three sentences on the anchor chart. The Bard rolls again.";
+        break;
+      case 3:
+        if(!boss.libraryPass){
+          boss.libraryPass=true;
+          result+="Each party member earns a one-time lunch library pass.";
+        }else{
+          result+="The lunch library pass reward was already earned. Roll again.";
+        }
+        break;
+      case 7:
+        if(!boss.sustenance&&!boss.sustenancePending){
+          boss.sustenancePending=true;
+          result+="The Knight defines 'sustenance' for the teacher. The DM must confirm it before the party earns sustenance.";
+        }else{
+          result+="The sustenance challenge has already been claimed or is awaiting confirmation. Roll again.";
+        }
+        break;
+      case 10:
+        result+="The Knight writes the last three to four sentences on the anchor chart. The Bard rolls again.";
+        break;
+      case 13:
+        if(!boss.treasure){
+          boss.treasure=true;
+          result+="Each party member earns a one-time selection from the Cursed Treasure box.";
+        }else{
+          result+="The Cursed Treasure reward was already earned. Roll again.";
+        }
+        break;
+      case 19:
+        result+="The Bard steals another party's Fighting Chance! Ask the teacher to coordinate.";
+        break;
+      default:
+        result+="No special event. The Bard rolls again.";
+    }
+
+    boss.result=result;
+    return boss;
+  });
 }
-async function saveDmRequest(checked) {
-  if (myRole !== "dm") return;
-  await roomRef.child("dmAskedForHelp").set(checked);
-  if (checked) {
-    await roomRef.child("bossResult").set("DM has requested a Fighting Chance. DM: raise your hand and wait for the teacher to bring you something helpful.");
-    await roomRef.child("log").transaction(log => {
-      log = Array.isArray(log)?log:[];
-      log.unshift("DM requested a Fighting Chance.");
-      return log.slice(0,30);
+
+function drawBoard(s){
+  const svg=$("board");
+  svg.replaceChildren();
+  const ns="http://www.w3.org/2000/svg";
+  const cx=450,cy=450;
+
+  function shape(tag,attributes){
+    const el=document.createElementNS(ns,tag);
+    Object.entries(attributes).forEach(([k,v])=>
+      el.setAttribute(k,v)
+    );
+    svg.appendChild(el);
+    return el;
+  }
+  function point(angle,radius){
+    const radians=angle*Math.PI/180;
+    return [
+      cx+Math.cos(radians)*radius,
+      cy+Math.sin(radians)*radius
+    ];
+  }
+  function text(x,y,value,size,color,weight="normal"){
+    const el=shape("text",{
+      x,y,fill:color,"font-size":size,
+      "font-family":"Georgia,serif",
+      "font-weight":weight,
+      "text-anchor":"middle"
     });
+    el.textContent=value;
   }
-}
-async function confirmSustenance() {
-  if (!roomRef || myRole !== "dm") return;
-  await transactRoom(state => {
-    if (!state.rewards || !state.rewards.sustenancePending) return;
-    state.rewards.sustenancePending = false;
-    state.rewards.sustenance = true;
-    state.bossResult = "Teacher/DM confirmation recorded: the Knight correctly defined sustenance. Every party member receives sustenance.";
-    addLog(state,"Sustenance reward confirmed for the entire party.");
-    return state;
-  });
-}
-async function rollBoss() {
-  if (myRole !== "bard" || busy || !allAtEnd(roomState || {}) || roomState.gameWon) return;
-  if (!String(roomState.finalResponse || "").trim()) {
-    $("gameStatus").textContent = "The party must enter its final response before the Bard rolls.";
-    return;
-  }
-  const result = Math.floor(Math.random()*21); // Custom classroom roll: 0–20.
-  await transactRoom(state => {
-    if (state.gameWon || !allAtEnd(state) || !String(state.finalResponse || "").trim()) return;
-    state.finalRollCount = (state.finalRollCount || 0)+1;
-    let message = `The Bard rolled ${result} on attempt ${state.finalRollCount}. `;
-    if (result === 20) {
-      message += "A 20! THE QUEST IS COMPLETE! The Knight starts the process of returning supplies.";
-      state.gameWon = true;
-    } else if (result === 0) {
-      message += "The Time Keeper writes the first three sentences on an anchor chart. Then the Bard may roll again.";
-    } else if (result === 3) {
-      if (!state.rewards.libraryPass) {
-        state.rewards.libraryPass = true;
-        message += "Each party member receives a one-time lunch library pass. This party reward has been claimed.";
-      } else message += "The party has already claimed its one-time lunch library passes. No duplicate reward.";
-    } else if (result === 7) {
-      if (!state.rewards.sustenance && !state.rewards.sustenancePending) {
-        state.rewards.sustenancePending = true;
-        message += "The Knight must tell the teacher what 'sustenance' means. The DM can confirm the definition; if accepted, each party member receives sustenance.";
-      } else message += "The party has already earned or is awaiting confirmation of its sustenance reward.";
-    } else if (result === 10) {
-      message += "The Knight writes the last 3–4 sentences on an anchor chart. Then the Bard may roll again.";
-    } else if (result === 13) {
-      if (!state.rewards.treasure) {
-        state.rewards.treasure = true;
-        message += "The party may choose one item from the Cursed Treasure box. This one-time reward has been claimed.";
-      } else message += "The party has already claimed its one-time Cursed Treasure box pick.";
-    } else if (result === 19) {
-      message += "The Bard steals another party's Fighting Chance! Ask the teacher to coordinate the cross-group effect.";
-    } else {
-      message += "No special event this time. The Bard may roll again.";
-    }
-    state.bossResult = message;
-    addLog(state,message);
-    return state;
-  });
-}
 
-function renderBoard(state) {
-  const svg = $("board");
-  svg.innerHTML = "";
-  const NS = "http://www.w3.org/2000/svg";
-  const cx=450, cy=450;
-  function el(tag,attrs) {
-    const n=document.createElementNS(NS,tag);
-    Object.entries(attrs).forEach(([k,v])=>n.setAttribute(k,v));
-    svg.appendChild(n); return n;
-  }
-  function pt(angle,r) {
-    const rad=angle*Math.PI/180;
-    return [cx+Math.cos(rad)*r,cy+Math.sin(rad)*r];
-  }
-  function text(x,y,value,size,fill,weight="normal",transform="") {
-    const n=el("text",{x,y,fill,"font-size":size,"font-family":"Georgia,serif","font-weight":weight,"text-anchor":"middle",...(transform?{transform}:{})});
-    n.textContent=value;
-  }
-  el("rect",{x:8,y:8,width:884,height:884,rx:28,fill:"#20291e",stroke:"#b28b4d","stroke-width":8});
-  [390,355,320].forEach((r,i)=>el("circle",{cx,cy,r,fill:"none",stroke:i===1?"#877346":"#596548","stroke-width":i===1?3:1.5,"stroke-dasharray":"7 10"}));
-  roleOrder.forEach(role=>{
-    const info=roleInfo[role], player=state.players&&state.players[role];
-    const [sx,sy]=pt(info.angle,390),[ex,ey]=pt(info.angle,105);
-    el("line",{x1:sx,y1:sy,x2:ex,y2:ey,stroke:info.color,"stroke-width":15,"stroke-linecap":"round",opacity:.18});
-    el("line",{x1:sx,y1:sy,x2:ex,y2:ey,stroke:"#d6c18d","stroke-width":2,"stroke-dasharray":"4 9"});
-    const [tx,ty]=pt(info.angle,430);
-    const transform=role==="knight"?`rotate(90 ${tx} ${ty})`:role==="timekeeper"?`rotate(-90 ${tx} ${ty})`:"";
-    text(tx,ty+5,`${info.emoji} ${info.label.toUpperCase()}`,17,info.color,"bold",transform);
-    for(let step=0;step<=12;step++){
-      const [x,y]=pt(info.angle,390-step*23.75);
-      const halt=[3,6,9,12].includes(step);
-      const done=halt&&state.questDone&&state.questDone[String(step)];
-      const fills={3:"#e8c477",6:"#83b5c7",9:"#b99ad8",12:"#d47b65"};
-      el("circle",{cx:x,cy:y,r:halt?18:12,fill:halt?(done?"#78a66f":fills[step]):"#e2d2ad",stroke:"#241d16","stroke-width":3});
-      if(step>0) text(x,y+4,String(step),11,"#251d14","bold");
-      if(halt){
-        const [lx,ly]=pt(info.angle,390-step*23.75-29);
-        text(lx,ly+3,done?"✓ COMPLETE":`HALT ${step/3}`,9,info.color,"bold");
-      }
+  shape("rect",{
+    x:8,y:8,width:884,height:884,rx:28,
+    fill:"#20291e",stroke:"#b28b4d","stroke-width":8
+  });
+
+  [390,355,320].forEach(r=>shape("circle",{
+    cx,cy,r,fill:"none",stroke:"#596548",
+    "stroke-width":2,"stroke-dasharray":"7 10"
+  }));
+
+  ROLES.forEach(role=>{
+    const info=INFO[role];
+    const [sx,sy]=point(info.angle,390);
+    const [ex,ey]=point(info.angle,105);
+
+    shape("line",{
+      x1:sx,y1:sy,x2:ex,y2:ey,
+      stroke:info.color,"stroke-width":15,opacity:.18
+    });
+
+    const [tx,ty]=point(info.angle,427);
+    text(tx,ty,info.icon,27,info.color,"bold");
+
+    for(let i=0;i<=12;i++){
+      const [x,y]=point(info.angle,390-i*23.75);
+      const halt=[3,6,9,12].includes(i);
+      const done=halt&&s.questDone[String(i)];
+      const colors={
+        3:"#e8c477",6:"#83b5c7",
+        9:"#b99ad8",12:"#d47b65"
+      };
+
+      shape("circle",{
+        cx:x,cy:y,r:halt?18:12,
+        fill:halt?(done?"#78a66f":colors[i]):"#e2d2ad",
+        stroke:"#241d16","stroke-width":3
+      });
+      if(i>0)text(x,y+4,String(i),11,"#251d14","bold");
     }
-    if(player){
-      const [px,py]=pt(info.angle,390-player.pos*23.75);
-      el("circle",{cx:px,cy:py,r:16,fill:info.color,stroke:"#fff1ce","stroke-width":3});
-      text(px,py+5,info.symbol,13,"#21190f","bold");
+
+    if(s.players?.[role]){
+      const pos=Number(s.game.positions[role]||0);
+      const [x,y]=point(info.angle,390-pos*23.75);
+
+      shape("circle",{
+        cx:x,cy:y,r:16,fill:info.color,
+        stroke:"#fff1ce","stroke-width":3
+      });
+      text(x,y+5,info.letter,13,"#21190f","bold");
     }
   });
-  el("circle",{cx,cy,r:91,fill:"#391d1b",stroke:"#d26d54","stroke-width":7});
-  el("circle",{cx,cy,r:76,fill:"none",stroke:"#f0bd68","stroke-width":2,"stroke-dasharray":"5 7"});
-  text(cx,cy-23,"THE",16,"#f2c97b","bold");
+
+  shape("circle",{
+    cx,cy,r:91,fill:"#391d1b",
+    stroke:"#d26d54","stroke-width":7
+  });
+  text(cx,cy-22,"THE",16,"#f2c97b","bold");
   text(cx,cy+7,"FINAL BOSS",22,"#ffb29e","bold");
   text(cx,cy+30,"TEAM QUEST",11,"#f5e8c8","bold");
 }
-function renderPlayers(state) {
-  $("players").innerHTML = roleOrder.map(role=>{
-    const p=state.players&&state.players[role], info=roleInfo[role];
-    const active=state.turnRole===role&&!state.activeQuest&&!state.gameWon;
-    return `<div class="player-card ${active?"active":""}">
-      <div class="player-role">${info.emoji} ${info.label}</div>
-      <div class="player-name">${p?escapeHtml(p.name):"Waiting for player..."}</div>
-      <div class="player-pos">${p?`Space ${p.pos} of 12`:"Character not claimed"}</div>
-    </div>`;
-  }).join("");
-}
-function renderQuest(state) {
-  const quest=state.activeQuest;
-  const panel=$("questPanel");
-  if(!quest){panel.classList.add("hidden");return;}
-  panel.classList.remove("hidden");
-  const def=QUESTS[quest.space];
-  $("questTitle").textContent=def.title;
-  $("questPrompt").textContent=def.prompt;
-  const fields=$("questFields");
-  if(quest.space===12){
-    fields.innerHTML=`
-      <div class="field"><label for="cursedAnswer">Enter the last two sentences from your version of the RR</label>
-      <textarea id="cursedAnswer" placeholder="Enter the last two sentences...">${escapeHtml(quest.answer||"")}</textarea></div>
-      <label class="checkrow"><input type="checkbox" id="partyAgree" ${quest.agreed?"checked":""}><span>All members of the party agree on this answer</span></label>`;
-    $("cursedAnswer").addEventListener("change",e=>updateCursedAnswer(e.target.value));
-    $("partyAgree").addEventListener("change",e=>updatePartyAgreement(e.target.checked));
-    $("completeQuest").disabled=!(String(quest.answer||"").trim()&&quest.agreed);
-  } else {
-    const checks=new Set(quest.checks||[]);
-    fields.innerHTML=`<div class="quest-checks">${def.checks.map((item,i)=>`
-      <label class="checkrow"><input type="checkbox" data-check="${i}" ${checks.has(i)?"checked":""}><span>${escapeHtml(item)}</span></label>`).join("")}</div>`;
-    fields.querySelectorAll("[data-check]").forEach(input=>{
-      input.addEventListener("change",e=>toggleQuestCheck(Number(e.target.dataset.check),e.target.checked));
-    });
-    $("completeQuest").disabled=checks.size<def.checks.length;
+
+function renderQuest(){
+  const space=currentQuest();
+  $("questPanel").classList.toggle("hidden",!space);
+
+  if(!space){
+    activeQuestRendered=0;
+    questDirty=false;
+    return;
   }
+
+  const quest=QUESTS[space];
+  const work=state.questWork?.[space]||{};
+
+  $("questTitle").textContent=quest.title;
+  $("questPrompt").textContent=quest.prompt;
+
+  if(activeQuestRendered!==space){
+    activeQuestRendered=space;
+    questDirty=false;
+    $("questFields").replaceChildren();
+
+    if(space===12){
+      const field=document.createElement("div");
+      field.className="field";
+
+      const label=document.createElement("label");
+      label.htmlFor="cursedAnswer";
+      label.textContent=
+        "Enter the last two sentences of your Reader's Response";
+
+      const area=document.createElement("textarea");
+      area.id="cursedAnswer";
+      area.value=work.answer||"";
+      area.addEventListener("input",()=>questDirty=true);
+      area.addEventListener("change",saveCursedAnswer);
+
+      field.append(label,area);
+      $("questFields").append(field);
+
+      const agreement=document.createElement("label");
+      agreement.className="checkrow";
+      const checkbox=document.createElement("input");
+      checkbox.type="checkbox";
+      checkbox.id="partyAgree";
+      checkbox.addEventListener("change",e=>
+        saveAgreement(e.target.checked)
+      );
+      const span=document.createElement("span");
+      span.textContent=
+        "All members of the party agree on this answer";
+      agreement.append(checkbox,span);
+      $("questFields").append(agreement);
+    }else{
+      quest.checks.forEach((description,i)=>{
+        const row=document.createElement("label");
+        row.className="checkrow";
+        const input=document.createElement("input");
+        input.type="checkbox";
+        input.dataset.index=i;
+        input.addEventListener("change",e=>
+          saveCheck(i,e.target.checked)
+        );
+        const span=document.createElement("span");
+        span.textContent=description;
+        row.append(input,span);
+        $("questFields").append(row);
+      });
+    }
+  }
+
+  if(space===12){
+    const area=$("cursedAnswer");
+    if(area&&!questDirty&&document.activeElement!==area)
+      area.value=work.answer||"";
+    $("partyAgree").checked=work.agreed===true;
+  }else{
+    document.querySelectorAll("[data-index]").forEach(input=>{
+      input.checked=
+        work.checks?.[input.dataset.index]===true;
+    });
+  }
+
+  $("completeQuestButton").disabled=
+    !questReady(state)||busy||questDirty;
 }
-function renderBoss(state) {
-  const unlocked=allAtEnd(state);
+
+function renderBoss(){
+  const unlocked=bossUnlocked(state);
   $("bossPanel").classList.toggle("hidden",!unlocked);
   if(!unlocked)return;
-  const response=$("finalResponse");
-  if(document.activeElement!==response) response.value=state.finalResponse||"";
-  response.onchange=()=>saveFinalResponse(response.value);
-  $("dmControl").classList.toggle("hidden",myRole!=="dm");
+
+  if(!finalDirty&&document.activeElement!==$("finalResponse"))
+    $("finalResponse").value=state.finalResponse||"";
+
+  $("dmControls").replaceChildren();
+  $("bardControls").replaceChildren();
+
   if(myRole==="dm"){
-    $("dmControl").innerHTML=`<label class="checkrow"><input type="checkbox" id="dmHelpCheck" ${state.dmAskedForHelp?"checked":""}><span>DM: Raise your hand to receive a Fighting Chance (wait for the teacher to bring you something helpful for the end of your adventure).</span></label>`;
-    $("dmHelpCheck").addEventListener("change",e=>saveDmRequest(e.target.checked));
+    const label=document.createElement("label");
+    label.className="checkrow";
+
+    const check=document.createElement("input");
+    check.type="checkbox";
+    check.checked=state.dmAskedForHelp===true;
+    check.addEventListener("change",e=>
+      setDMHelp(e.target.checked)
+    );
+
+    const span=document.createElement("span");
+    span.textContent=
+      "DM: Raise your hand to receive a Fighting Chance (wait for the teacher to bring you something helpful for the end of your adventure).";
+
+    label.append(check,span);
+    $("dmControls").append(label);
+
+    if(state.boss.sustenancePending){
+      const button=document.createElement("button");
+      button.className="full";
+      button.textContent="Confirm Knight's Sustenance Definition";
+      button.onclick=confirmSustenance;
+      $("dmControls").append(button);
+    }
   }
-  $("bardControl").classList.toggle("hidden",myRole!=="bard");
+
   if(myRole==="bard"){
-    $("bardControl").innerHTML=`<button id="bardRoll" class="full" ${!String(state.finalResponse||"").trim()||state.gameWon?"disabled":""}>Bard: Roll the custom D20 (0–20)</button>`;
-    $("bardRoll").addEventListener("click",rollBoss);
+    const button=document.createElement("button");
+    button.className="full";
+    button.textContent="Bard: Roll the Final Boss Die (0–20)";
+    button.disabled=
+      !String(state.finalResponse||"").trim()||
+      state.boss.gameWon||busy;
+    button.onclick=rollFinalBoss;
+    $("bardControls").append(button);
   }
-  if(state.rewards&&state.rewards.sustenancePending&&myRole==="dm"){
-    const confirm=document.createElement("button");
-    confirm.className="full";
-    confirm.textContent="Confirm Knight's sustenance definition";
-    confirm.addEventListener("click",confirmSustenance);
-    $("dmControl").appendChild(confirm);
-  }
-  $("bossResult").textContent=state.gameWon?"🏆 THE ADVENTURE IS COMPLETE! "+(state.bossResult||""):(state.bossResult||"The Bard's roll and party outcomes will appear here.");
-  if(state.gameWon) $("gameStatus").textContent="The adventure is complete! The Knight begins returning supplies.";
-}
-function renderGame() {
-  if(!roomState)return;
-  renderBoard(roomState);
-  renderPlayers(roomState);
-  const joined=Object.keys(roomState.players||{}).length;
-  const turnRole=roomState.turnRole;
-  const turnPlayer=roomState.players&&roomState.players[turnRole];
-  $("turnStatus").textContent=turnPlayer
-    ? `Turn: ${turnPlayer.name} (${roleInfo[turnRole].label})${turnRole===myRole?" — IT'S YOUR TURN!":""}`
-    : "Waiting for the next player.";
-  $("rollButton").disabled=!isMyTurn()||busy;
-  $("rollButton").textContent=isMyTurn()?"Roll Both Dice":"Waiting for your turn";
-  if(roomState.lastDice){
-    $("die1").textContent=["","⚀","⚁","⚂","⚃","⚄","⚅"][roomState.lastDice[0]];
-    $("die2").textContent=["","⚀","⚁","⚂","⚃","⚄","⚅"][roomState.lastDice[1]];
-  }
-  if(roomState.activeQuest){
-    $("gameStatus").textContent=`Party quest in progress: ${QUESTS[roomState.activeQuest.space].title}. Everyone can help complete it.`;
-  } else if(allAtEnd(roomState)){
-    $("gameStatus").textContent=roomState.gameWon?"Adventure complete!":"All four players have reached the Final Boss.";
-  } else if(joined<4){
-    $("gameStatus").textContent=`${joined} of 4 players have joined. Share room code ${roomCode} with the rest of your group.`;
-  } else if(roomState.gameWon){
-    $("gameStatus").textContent="The adventure is complete!";
-  } else {
-    $("gameStatus").textContent=isMyTurn()?"It's your turn. Roll both dice!":`Waiting for ${turnPlayer?turnPlayer.name:"the next adventurer"}.`;
-  }
-  renderQuest(roomState);
-  renderBoss(roomState);
-  $("log").innerHTML=(roomState.log||[]).map(item=>`<li>${escapeHtml(item)}</li>`).join("");
+
+  $("bossResult").textContent=state.boss.result;
 }
 
-$("createRoom").addEventListener("click",createRoom);
-$("joinRoom").addEventListener("click",joinRoom);
-$("rollButton").addEventListener("click",rollMovement);
-$("completeQuest").addEventListener("click",completeQuest);
-$("leaveRoom").addEventListener("click",()=>leaveRoom(true));
+function render(){
+  if(!state)return;
 
-if(FIREBASE_CONFIG_IS_SET){
-  try{
-    firebase.initializeApp(firebaseConfig);
-    auth=firebase.auth();
-    db=firebase.database();
-  }catch(error){
-    saySetup("Firebase initialization error: "+error.message);
-  }
-}else{
-  saySetup("Before using multiplayer, connect this file to your Firebase project by replacing the configuration placeholders in the code.");
+  drawBoard(state);
+
+  $("players").innerHTML=ROLES.map(role=>{
+    const player=state.players?.[role];
+    const active=state.game.turnRole===role&&
+      !state.game.pendingQuest&&
+      !bossUnlocked(state);
+
+    return `
+      <div class="player-card ${active?"active":""}">
+        <div class="player-role">
+          ${INFO[role].icon} ${INFO[role].name}
+        </div>
+        <div class="player-name">
+          ${player?escapeHTML(player.name):"Waiting for player..."}
+        </div>
+        <div class="player-pos">
+          ${player?"Space "+state.game.positions[role]+
+            " of 12":"Not claimed"}
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  const current=state.players?.[state.game.turnRole];
+
+  $("turnStatus").textContent=allJoined(state)?
+    "Turn: "+(current?.name||"Adventurer")+
+    " ("+INFO[state.game.turnRole].name+")":
+    "Waiting for all four adventurers";
+
+  const faces=["","⚀","⚁","⚂","⚃","⚄","⚅"];
+  $("die1").textContent=faces[state.game.lastDie1]||"⚀";
+  $("die2").textContent=faces[state.game.lastDie2]||"⚀";
+
+  $("rollButton").disabled=!myTurn()||busy;
+
+  const count=Object.keys(state.players||{}).length;
+
+  if(state.boss.gameWon)
+    $("gameStatus").textContent="🏆 QUEST COMPLETE!";
+  else if(!allJoined(state))
+    $("gameStatus").textContent=
+      count+" of 4 adventurers joined. Share code "+roomCode+".";
+  else if(currentQuest())
+    $("gameStatus").textContent=
+      "Party quest: "+QUESTS[currentQuest()].title;
+  else if(bossUnlocked(state))
+    $("gameStatus").textContent=
+      "All adventurers have reached the Final Boss!";
+  else
+    $("gameStatus").textContent=myTurn()?
+      "It's your turn! Roll both dice.":
+      "Waiting for "+(current?.name||"the next player")+".";
+
+  renderQuest();
+  renderBoss();
+
+  const entries=[
+    count+" of 4 adventurers joined",
+    [3,6,9,12].filter(n=>
+      state.questDone[String(n)]
+    ).length+" of 4 party quests completed",
+    "Movement rolls: "+(state.game.moveCount||0),
+    "Final Boss rolls: "+(state.boss.rollCount||0)
+  ];
+
+  if(state.boss.rollCount)entries.push(state.boss.result);
+
+  $("log").innerHTML=entries.map(item=>
+    "<li>"+escapeHTML(item)+"</li>"
+  ).join("");
 }
+
+$("createButton").onclick=createRoom;
+$("joinButton").onclick=joinRoom;
+$("leaveButton").onclick=leaveRoom;
+$("rollButton").onclick=rollMovement;
+$("completeQuestButton").onclick=completeQuest;
+$("saveResponseButton").onclick=saveFinalResponse;
+$("finalResponse").addEventListener("input",()=>finalDirty=true);
+
+auth.onAuthStateChanged(async user=>{
+  if(user){
+    uid=user.uid;
+    await restoreRoom();
+  }else{
+    try{
+      await ensureAuth();
+    }catch(e){
+      message("Authentication error: "+e.message);
+    }
+  }
+});
 </script>
 </body>
 </html>
