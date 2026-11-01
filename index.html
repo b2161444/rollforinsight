@@ -387,7 +387,6 @@ let busy=false;
 let activeQuestRendered=0;
 let questDirty=false;
 let finalDirty=false;
-let statusMessage="";
 
 function escapeHTML(value){
   return String(value??"").replace(/[&<>"']/g,c=>({
@@ -410,13 +409,17 @@ function dice(sides){
 }
 
 function message(text){
-  statusMessage=text;
-  if(state)$("gameStatus").textContent=text;
-  else $("setupMessage").textContent=text;
+  if(state){
+    $("gameStatus").textContent=text;
+  }else{
+    $("setupMessage").textContent=text;
+  }
 }
 
 async function ensureAuth(){
-  if(!auth.currentUser)await auth.signInAnonymously();
+  if(!auth.currentUser){
+    await auth.signInAnonymously();
+  }
   uid=auth.currentUser.uid;
 }
 
@@ -503,91 +506,152 @@ function currentQuest(){
 function questReady(s){
   const n=Number(s.game.pendingQuest);
   if(!n)return false;
+
   const work=s.questWork?.[n];
   if(!work)return false;
-  if(n===12)
+
+  if(n===12){
     return !!String(work.answer||"").trim()&&
       work.agreed===true;
+  }
+
   return QUESTS[n].checks.every((_,i)=>
     work.checks?.[i]===true
   );
 }
 
+/*
+  ROOM CREATION FIX:
+  Use set() instead of a transaction.
+  Firebase rules allow creation only when the room does not exist.
+*/
 async function createRoom(){
   if(busy)return;
+
   const name=$("createName").value.trim();
   const chosen=$("createRole").value;
-  if(!name)return message("Enter a character name.");
+
+  if(!name){
+    message("Enter a character name.");
+    return;
+  }
+
   busy=true;
   $("createButton").disabled=true;
+  $("setupMessage").textContent="Creating your room...";
+
   try{
     await ensureAuth();
+
     let created=null;
+
     for(let attempt=0;attempt<8;attempt++){
       const candidate=randomRoomCode();
-      const result=await db.ref("rooms/"+candidate)
-        .transaction(existing=>{
-          if(existing!==null)return;
-          return startingRoom(chosen,name);
-        },undefined,false);
-      if(result.committed){
+      const ref=db.ref("rooms/"+candidate);
+
+      try{
+        await ref.set(startingRoom(chosen,name));
         created=candidate;
         break;
+      }catch(error){
+        if(error.code==="PERMISSION_DENIED" ||
+           error.code==="permission_denied"){
+          throw error;
+        }
+        throw error;
       }
     }
-    if(!created)throw Error("Unable to create a room. Try again.");
+
+    if(!created){
+      throw Error("Unable to create a room. Please try again.");
+    }
+
+    $("setupMessage").textContent="";
     enterRoom(created,chosen);
-  }catch(e){
-    message("Create room: "+e.message);
+
+  }catch(error){
+    message("Create room: "+error.message);
   }finally{
     busy=false;
     $("createButton").disabled=false;
   }
 }
 
+/*
+  ROOM JOINING FIX:
+  Read the room, then claim the chosen role with set().
+  Firebase rules reject writes to an already claimed role.
+*/
 async function joinRoom(){
   if(busy)return;
+
   const candidate=$("joinCode").value.trim().toUpperCase();
   const name=$("joinName").value.trim();
   const chosen=$("joinRole").value;
 
-  if(!/^[A-HJ-NP-Z2-9]{6}$/.test(candidate))
-    return message("Enter a valid six-character room code.");
-  if(!name)return message("Enter a character name.");
+  if(!/^[A-HJ-NP-Z2-9]{6}$/.test(candidate)){
+    message("Enter a valid six-character room code.");
+    return;
+  }
+
+  if(!name){
+    message("Enter a character name.");
+    return;
+  }
 
   busy=true;
   $("joinButton").disabled=true;
+  $("setupMessage").textContent="Joining your party...";
+
   try{
     await ensureAuth();
+
     const ref=db.ref("rooms/"+candidate);
     const snapshot=await ref.once("value");
-    if(!snapshot.exists())throw Error("That room does not exist.");
+
+    if(!snapshot.exists()){
+      throw Error("That room does not exist.");
+    }
 
     const room=snapshot.val();
     const existing=room.players?.[chosen];
 
-    if(existing&&existing.uid!==uid)
-      throw Error("That character is already claimed.");
+    if(existing){
+      if(existing.uid!==uid){
+        throw Error("That character is already claimed.");
+      }
 
-    if(!existing){
-      const alreadyHasRole=ROLES.some(r=>
-        room.players?.[r]?.uid===uid
-      );
-      if(alreadyHasRole)
-        throw Error("You already have a character in this room.");
-
-      const result=await ref.child("players/"+chosen)
-        .transaction(old=>{
-          if(old!==null)return;
-          return {uid,name};
-        },undefined,false);
-
-      if(!result.committed)
-        throw Error("Someone else claimed that character first.");
+      enterRoom(candidate,chosen);
+      return;
     }
+
+    const alreadyHasRole=ROLES.some(role=>
+      room.players?.[role]?.uid===uid
+    );
+
+    if(alreadyHasRole){
+      throw Error(
+        "You already have a character in this room. Rejoin using your original role."
+      );
+    }
+
+    await ref.child("players/"+chosen).set({
+      uid:uid,
+      name:name
+    });
+
+    $("setupMessage").textContent="";
     enterRoom(candidate,chosen);
-  }catch(e){
-    message("Join room: "+e.message);
+
+  }catch(error){
+    if(error.code==="PERMISSION_DENIED" ||
+       error.code==="permission_denied"){
+      message(
+        "Join room: That character may already be claimed, or Firebase denied the request."
+      );
+    }else{
+      message("Join room: "+error.message);
+    }
   }finally{
     busy=false;
     $("joinButton").disabled=false;
@@ -595,8 +659,9 @@ async function joinRoom(){
 }
 
 function enterRoom(code,role){
-  if(roomRef&&roomListener)
+  if(roomRef&&roomListener){
     roomRef.off("value",roomListener);
+  }
 
   roomCode=code;
   myRole=role;
@@ -622,12 +687,15 @@ function enterRoom(code,role){
       message("The room no longer exists.");
       return;
     }
+
     const incoming=snapshot.val();
+
     if(incoming.players?.[myRole]?.uid!==uid){
       leaveRoom();
       message("You no longer own that character.");
       return;
     }
+
     state=incoming;
     render();
   };
@@ -639,16 +707,20 @@ function enterRoom(code,role){
 }
 
 function leaveRoom(){
-  if(roomRef&&roomListener)
+  if(roomRef&&roomListener){
     roomRef.off("value",roomListener);
+  }
+
   roomRef=null;
   roomListener=null;
   roomCode=null;
   myRole=null;
   state=null;
   activeQuestRendered=0;
+
   localStorage.removeItem(STORE_ROOM);
   localStorage.removeItem(STORE_ROLE);
+
   $("game").classList.add("hidden");
   $("setup").classList.remove("hidden");
 }
@@ -656,31 +728,44 @@ function leaveRoom(){
 async function restoreRoom(){
   const code=localStorage.getItem(STORE_ROOM);
   const role=localStorage.getItem(STORE_ROLE);
+
   if(!code||!ROLES.includes(role))return;
+
   try{
     await ensureAuth();
+
     const snap=await db.ref("rooms/"+code).once("value");
-    if(snap.val()?.players?.[role]?.uid===uid)
+
+    if(snap.val()?.players?.[role]?.uid===uid){
       enterRoom(code,role);
-    else{
+    }else{
       localStorage.removeItem(STORE_ROOM);
       localStorage.removeItem(STORE_ROLE);
     }
-  }catch(e){
-    message("Reconnect: "+e.message);
+  }catch(error){
+    message("Reconnect: "+error.message);
   }
 }
 
-async function transaction(ref,transform){
+async function runTransaction(ref,transform){
   if(busy)return false;
+
   busy=true;
+
   try{
-    const result=await ref.transaction(transform,undefined,false);
-    if(!result.committed)
-      message("That action was not completed. Try again.");
+    const result=await ref.transaction(
+      transform,
+      undefined,
+      false
+    );
+
+    if(!result.committed){
+      message("That action was not completed. Please try again.");
+    }
+
     return result.committed;
-  }catch(e){
-    message("Firebase: "+e.message);
+  }catch(error){
+    message("Firebase: "+error.message);
     return false;
   }finally{
     busy=false;
@@ -690,7 +775,10 @@ async function transaction(ref,transform){
 
 async function rollMovement(){
   if(!myTurn()||busy)return;
-  const a=dice(6),b=dice(6);
+
+  const a=dice(6);
+  const b=dice(6);
+
   const done={
     3:state.questDone["3"],
     6:state.questDone["6"],
@@ -698,14 +786,19 @@ async function rollMovement(){
     12:state.questDone["12"]
   };
 
-  await transaction(roomRef.child("game"),game=>{
-    if(!game||game.turnRole!==myRole||
-       Number(game.pendingQuest)!==0)return;
+  await runTransaction(roomRef.child("game"),game=>{
+    if(!game||
+       game.turnRole!==myRole||
+       Number(game.pendingQuest)!==0){
+      return;
+    }
 
     const old=Number(game.positions[myRole]);
+
     if(old>=12)return;
 
     const destination=Math.min(12,old+a+b);
+
     const stop=[3,6,9,12].find(n=>
       n>old&&n<=destination&&!done[n]
     );
@@ -720,100 +813,137 @@ async function rollMovement(){
     }else{
       game.turnRole=nextTurn(game.positions,myRole);
     }
+
     return game;
   });
 }
 
 async function saveCheck(index,checked){
   const space=currentQuest();
+
   if(!space||space===12)return;
+
   try{
     await roomRef.child(
       "questWork/"+space+"/checks/"+index
     ).set(checked);
-  }catch(e){message(e.message);}
+  }catch(error){
+    message(error.message);
+  }
 }
 
 async function saveCursedAnswer(){
   if(currentQuest()!==12)return;
+
   const text=$("cursedAnswer").value.trim();
+
   try{
     await roomRef.child("questWork/12/answer").set(text);
     questDirty=false;
-  }catch(e){message(e.message);}
+  }catch(error){
+    message(error.message);
+  }
 }
 
 async function saveAgreement(checked){
   if(currentQuest()!==12)return;
+
   try{
     await roomRef.child("questWork/12/agreed").set(checked);
-  }catch(e){message(e.message);}
+  }catch(error){
+    message(error.message);
+  }
 }
 
 async function completeQuest(){
   if(!state||!questReady(state)||busy)return;
+
   const space=currentQuest();
   if(!space)return;
 
   busy=true;
+
   try{
     await roomRef.child("questDone/"+space).set(true);
 
-    const result=await roomRef.child("game")
-      .transaction(game=>{
+    const result=await roomRef.child("game").transaction(
+      game=>{
         if(!game||Number(game.pendingQuest)!==space)return;
-        game.pendingQuest=0;
-        game.turnRole=nextTurn(game.positions,game.turnRole);
-        return game;
-      },undefined,false);
 
-    if(!result.committed)
+        game.pendingQuest=0;
+        game.turnRole=nextTurn(
+          game.positions,
+          game.turnRole
+        );
+
+        return game;
+      },
+      undefined,
+      false
+    );
+
+    if(!result.committed){
       message("Quest progress changed. Please try again.");
-  }catch(e){
-    message("Quest completion: "+e.message);
+    }
+  }catch(error){
+    message("Quest completion: "+error.message);
   }finally{
     busy=false;
-    render();
+    if(state)render();
   }
 }
 
 async function saveFinalResponse(){
   if(!bossUnlocked(state))return;
+
   const text=$("finalResponse").value.trim();
+
   try{
     await roomRef.child("finalResponse").set(text);
     finalDirty=false;
     message("Party response saved.");
-  }catch(e){message(e.message);}
+  }catch(error){
+    message(error.message);
+  }
 }
 
 async function setDMHelp(checked){
   if(myRole!=="dm")return;
+
   try{
     await roomRef.child("dmAskedForHelp").set(checked);
-  }catch(e){message(e.message);}
+  }catch(error){
+    message(error.message);
+  }
 }
 
 async function confirmSustenance(){
   if(myRole!=="dm"||!state.boss.sustenancePending)return;
-  await transaction(roomRef.child("boss"),boss=>{
+
+  await runTransaction(roomRef.child("boss"),boss=>{
     if(!boss||!boss.sustenancePending)return;
+
     boss.sustenancePending=false;
     boss.sustenance=true;
     boss.result=
       "The DM confirms the Knight's definition of sustenance. Each party member earns sustenance!";
+
     return boss;
   });
 }
 
 async function rollFinalBoss(){
-  if(myRole!=="bard"||!bossUnlocked(state)||
+  if(myRole!=="bard"||
+     !bossUnlocked(state)||
      state.boss.gameWon||
-     !String(state.finalResponse||"").trim()||busy)return;
+     !String(state.finalResponse||"").trim()||
+     busy){
+    return;
+  }
 
   const roll=dice(21)-1;
 
-  await transaction(roomRef.child("boss"),boss=>{
+  await runTransaction(roomRef.child("boss"),boss=>{
     if(!boss||boss.gameWon)return;
 
     boss.rollCount=(boss.rollCount||0)+1;
@@ -826,9 +956,11 @@ async function rollFinalBoss(){
         boss.gameWon=true;
         result+="VICTORY! The party defeats the Final Boss. The Knight returns the supplies.";
         break;
+
       case 0:
         result+="The Time Keeper writes the first three sentences on the anchor chart. The Bard rolls again.";
         break;
+
       case 3:
         if(!boss.libraryPass){
           boss.libraryPass=true;
@@ -837,6 +969,7 @@ async function rollFinalBoss(){
           result+="The lunch library pass reward was already earned. Roll again.";
         }
         break;
+
       case 7:
         if(!boss.sustenance&&!boss.sustenancePending){
           boss.sustenancePending=true;
@@ -845,9 +978,11 @@ async function rollFinalBoss(){
           result+="The sustenance challenge has already been claimed or is awaiting confirmation. Roll again.";
         }
         break;
+
       case 10:
         result+="The Knight writes the last three to four sentences on the anchor chart. The Bard rolls again.";
         break;
+
       case 13:
         if(!boss.treasure){
           boss.treasure=true;
@@ -856,9 +991,11 @@ async function rollFinalBoss(){
           result+="The Cursed Treasure reward was already earned. Roll again.";
         }
         break;
+
       case 19:
         result+="The Bard steals another party's Fighting Chance! Ask the teacher to coordinate.";
         break;
+
       default:
         result+="No special event. The Bard rolls again.";
     }
@@ -871,42 +1008,57 @@ async function rollFinalBoss(){
 function drawBoard(s){
   const svg=$("board");
   svg.replaceChildren();
+
   const ns="http://www.w3.org/2000/svg";
-  const cx=450,cy=450;
+  const cx=450;
+  const cy=450;
 
   function shape(tag,attributes){
     const el=document.createElementNS(ns,tag);
+
     Object.entries(attributes).forEach(([k,v])=>
       el.setAttribute(k,v)
     );
+
     svg.appendChild(el);
     return el;
   }
+
   function point(angle,radius){
     const radians=angle*Math.PI/180;
+
     return [
       cx+Math.cos(radians)*radius,
       cy+Math.sin(radians)*radius
     ];
   }
+
   function text(x,y,value,size,color,weight="normal"){
     const el=shape("text",{
-      x,y,fill:color,"font-size":size,
+      x,y,
+      fill:color,
+      "font-size":size,
       "font-family":"Georgia,serif",
       "font-weight":weight,
       "text-anchor":"middle"
     });
+
     el.textContent=value;
   }
 
   shape("rect",{
     x:8,y:8,width:884,height:884,rx:28,
-    fill:"#20291e",stroke:"#b28b4d","stroke-width":8
+    fill:"#20291e",
+    stroke:"#b28b4d",
+    "stroke-width":8
   });
 
   [390,355,320].forEach(r=>shape("circle",{
-    cx,cy,r,fill:"none",stroke:"#596548",
-    "stroke-width":2,"stroke-dasharray":"7 10"
+    cx,cy,r,
+    fill:"none",
+    stroke:"#596548",
+    "stroke-width":2,
+    "stroke-dasharray":"7 10"
   }));
 
   ROLES.forEach(role=>{
@@ -915,8 +1067,11 @@ function drawBoard(s){
     const [ex,ey]=point(info.angle,105);
 
     shape("line",{
-      x1:sx,y1:sy,x2:ex,y2:ey,
-      stroke:info.color,"stroke-width":15,opacity:.18
+      x1:sx,y1:sy,
+      x2:ex,y2:ey,
+      stroke:info.color,
+      "stroke-width":15,
+      opacity:.18
     });
 
     const [tx,ty]=point(info.angle,427);
@@ -926,17 +1081,27 @@ function drawBoard(s){
       const [x,y]=point(info.angle,390-i*23.75);
       const halt=[3,6,9,12].includes(i);
       const done=halt&&s.questDone[String(i)];
+
       const colors={
-        3:"#e8c477",6:"#83b5c7",
-        9:"#b99ad8",12:"#d47b65"
+        3:"#e8c477",
+        6:"#83b5c7",
+        9:"#b99ad8",
+        12:"#d47b65"
       };
 
       shape("circle",{
-        cx:x,cy:y,r:halt?18:12,
-        fill:halt?(done?"#78a66f":colors[i]):"#e2d2ad",
-        stroke:"#241d16","stroke-width":3
+        cx:x,cy:y,
+        r:halt?18:12,
+        fill:halt?
+          (done?"#78a66f":colors[i]):
+          "#e2d2ad",
+        stroke:"#241d16",
+        "stroke-width":3
       });
-      if(i>0)text(x,y+4,String(i),11,"#251d14","bold");
+
+      if(i>0){
+        text(x,y+4,String(i),11,"#251d14","bold");
+      }
     }
 
     if(s.players?.[role]){
@@ -944,17 +1109,24 @@ function drawBoard(s){
       const [x,y]=point(info.angle,390-pos*23.75);
 
       shape("circle",{
-        cx:x,cy:y,r:16,fill:info.color,
-        stroke:"#fff1ce","stroke-width":3
+        cx:x,cy:y,
+        r:16,
+        fill:info.color,
+        stroke:"#fff1ce",
+        "stroke-width":3
       });
+
       text(x,y+5,info.letter,13,"#21190f","bold");
     }
   });
 
   shape("circle",{
-    cx,cy,r:91,fill:"#391d1b",
-    stroke:"#d26d54","stroke-width":7
+    cx,cy,r:91,
+    fill:"#391d1b",
+    stroke:"#d26d54",
+    "stroke-width":7
   });
+
   text(cx,cy-22,"THE",16,"#f2c97b","bold");
   text(cx,cy+7,"FINAL BOSS",22,"#ffb29e","bold");
   text(cx,cy+30,"TEAM QUEST",11,"#f5e8c8","bold");
@@ -962,6 +1134,7 @@ function drawBoard(s){
 
 function renderQuest(){
   const space=currentQuest();
+
   $("questPanel").classList.toggle("hidden",!space);
 
   if(!space){
@@ -1001,29 +1174,37 @@ function renderQuest(){
 
       const agreement=document.createElement("label");
       agreement.className="checkrow";
+
       const checkbox=document.createElement("input");
       checkbox.type="checkbox";
       checkbox.id="partyAgree";
       checkbox.addEventListener("change",e=>
         saveAgreement(e.target.checked)
       );
+
       const span=document.createElement("span");
       span.textContent=
         "All members of the party agree on this answer";
+
       agreement.append(checkbox,span);
       $("questFields").append(agreement);
+
     }else{
       quest.checks.forEach((description,i)=>{
         const row=document.createElement("label");
         row.className="checkrow";
+
         const input=document.createElement("input");
         input.type="checkbox";
         input.dataset.index=i;
+
         input.addEventListener("change",e=>
           saveCheck(i,e.target.checked)
         );
+
         const span=document.createElement("span");
         span.textContent=description;
+
         row.append(input,span);
         $("questFields").append(row);
       });
@@ -1032,8 +1213,11 @@ function renderQuest(){
 
   if(space===12){
     const area=$("cursedAnswer");
-    if(area&&!questDirty&&document.activeElement!==area)
+
+    if(area&&!questDirty&&document.activeElement!==area){
       area.value=work.answer||"";
+    }
+
     $("partyAgree").checked=work.agreed===true;
   }else{
     document.querySelectorAll("[data-index]").forEach(input=>{
@@ -1048,11 +1232,14 @@ function renderQuest(){
 
 function renderBoss(){
   const unlocked=bossUnlocked(state);
+
   $("bossPanel").classList.toggle("hidden",!unlocked);
+
   if(!unlocked)return;
 
-  if(!finalDirty&&document.activeElement!==$("finalResponse"))
+  if(!finalDirty&&document.activeElement!==$("finalResponse")){
     $("finalResponse").value=state.finalResponse||"";
+  }
 
   $("dmControls").replaceChildren();
   $("bardControls").replaceChildren();
@@ -1064,6 +1251,7 @@ function renderBoss(){
     const check=document.createElement("input");
     check.type="checkbox";
     check.checked=state.dmAskedForHelp===true;
+
     check.addEventListener("change",e=>
       setDMHelp(e.target.checked)
     );
@@ -1078,8 +1266,10 @@ function renderBoss(){
     if(state.boss.sustenancePending){
       const button=document.createElement("button");
       button.className="full";
-      button.textContent="Confirm Knight's Sustenance Definition";
+      button.textContent=
+        "Confirm Knight's Sustenance Definition";
       button.onclick=confirmSustenance;
+
       $("dmControls").append(button);
     }
   }
@@ -1087,11 +1277,16 @@ function renderBoss(){
   if(myRole==="bard"){
     const button=document.createElement("button");
     button.className="full";
-    button.textContent="Bard: Roll the Final Boss Die (0–20)";
+    button.textContent=
+      "Bard: Roll the Final Boss Die (0–20)";
+
     button.disabled=
       !String(state.finalResponse||"").trim()||
-      state.boss.gameWon||busy;
+      state.boss.gameWon||
+      busy;
+
     button.onclick=rollFinalBoss;
+
     $("bardControls").append(button);
   }
 
@@ -1105,7 +1300,9 @@ function render(){
 
   $("players").innerHTML=ROLES.map(role=>{
     const player=state.players?.[role];
-    const active=state.game.turnRole===role&&
+
+    const active=
+      state.game.turnRole===role&&
       !state.game.pendingQuest&&
       !bossUnlocked(state);
 
@@ -1115,11 +1312,14 @@ function render(){
           ${INFO[role].icon} ${INFO[role].name}
         </div>
         <div class="player-name">
-          ${player?escapeHTML(player.name):"Waiting for player..."}
+          ${player?
+            escapeHTML(player.name):
+            "Waiting for player..."}
         </div>
         <div class="player-pos">
-          ${player?"Space "+state.game.positions[role]+
-            " of 12":"Not claimed"}
+          ${player?
+            "Space "+state.game.positions[role]+" of 12":
+            "Not claimed"}
         </div>
       </div>
     `;
@@ -1133,28 +1333,33 @@ function render(){
     "Waiting for all four adventurers";
 
   const faces=["","⚀","⚁","⚂","⚃","⚄","⚅"];
-  $("die1").textContent=faces[state.game.lastDie1]||"⚀";
-  $("die2").textContent=faces[state.game.lastDie2]||"⚀";
+
+  $("die1").textContent=
+    faces[state.game.lastDie1]||"⚀";
+
+  $("die2").textContent=
+    faces[state.game.lastDie2]||"⚀";
 
   $("rollButton").disabled=!myTurn()||busy;
 
   const count=Object.keys(state.players||{}).length;
 
-  if(state.boss.gameWon)
+  if(state.boss.gameWon){
     $("gameStatus").textContent="🏆 QUEST COMPLETE!";
-  else if(!allJoined(state))
+  }else if(!allJoined(state)){
     $("gameStatus").textContent=
       count+" of 4 adventurers joined. Share code "+roomCode+".";
-  else if(currentQuest())
+  }else if(currentQuest()){
     $("gameStatus").textContent=
       "Party quest: "+QUESTS[currentQuest()].title;
-  else if(bossUnlocked(state))
+  }else if(bossUnlocked(state)){
     $("gameStatus").textContent=
       "All adventurers have reached the Final Boss!";
-  else
+  }else{
     $("gameStatus").textContent=myTurn()?
       "It's your turn! Roll both dice.":
       "Waiting for "+(current?.name||"the next player")+".";
+  }
 
   renderQuest();
   renderBoss();
@@ -1168,7 +1373,9 @@ function render(){
     "Final Boss rolls: "+(state.boss.rollCount||0)
   ];
 
-  if(state.boss.rollCount)entries.push(state.boss.result);
+  if(state.boss.rollCount){
+    entries.push(state.boss.result);
+  }
 
   $("log").innerHTML=entries.map(item=>
     "<li>"+escapeHTML(item)+"</li>"
@@ -1181,7 +1388,11 @@ $("leaveButton").onclick=leaveRoom;
 $("rollButton").onclick=rollMovement;
 $("completeQuestButton").onclick=completeQuest;
 $("saveResponseButton").onclick=saveFinalResponse;
-$("finalResponse").addEventListener("input",()=>finalDirty=true);
+
+$("finalResponse").addEventListener(
+  "input",
+  ()=>finalDirty=true
+);
 
 auth.onAuthStateChanged(async user=>{
   if(user){
@@ -1190,8 +1401,8 @@ auth.onAuthStateChanged(async user=>{
   }else{
     try{
       await ensureAuth();
-    }catch(e){
-      message("Authentication error: "+e.message);
+    }catch(error){
+      message("Authentication error: "+error.message);
     }
   }
 });
